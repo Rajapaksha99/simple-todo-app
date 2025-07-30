@@ -1,42 +1,46 @@
-name: Fullstack App Deployment to Ubuntu VPS
+name: 🚀 Deploy MERN App
 
 on:
   push:
     branches:
-      - main
+      - main  # or your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Deploy to Ubuntu VPS via SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_PRIVATE_KEY }}
-        script: |
-          echo "📁 Changing to project directory..."
-          cd ~/simple-todo-app
+      - name: 🔐 Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          echo "🔄 Pulling latest changes from GitHub..."
-          git reset --hard
-          git pull origin main
+      - name: 🚀 Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
+            cd ~/simple-todo-app
 
-          echo "🧰 Installing backend dependencies..."
-          cd backend
-          npm install
+            # Pull latest code
+            git pull origin main
 
-          echo "🚀 Restarting backend with PM2..."
-          pm2 restart Server.js || pm2 start Server.js
+            # Install backend dependencies
+            cd backend
+            npm install
 
-          echo "🧱 Building frontend..."
-          cd ../frontend
-          npm install
-          npm run build
+            # Restart backend with PM2
+            pm2 restart backend || pm2 start Server.js --name backend
 
-          echo "✅ Deployment finished successfully."
+            # Build frontend
+            cd ../frontend
+            npm install
+            npm run build
+
+            # Replace Nginx files
+            sudo rm -rf /var/www/html/*
+            sudo cp -r build/* /var/www/html/
+
+            echo "✅ Deployment complete!"
+          EOF
