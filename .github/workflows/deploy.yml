@@ -3,7 +3,7 @@ name: 🚀 Deploy MERN App
 on:
   push:
     branches:
-      - main  # Replace with your default branch if different
+      - main
 
 jobs:
   deploy:
@@ -18,19 +18,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: 🚀 Deploy to Server
+      - name: 🚀 Deploy to Azure Server
         run: |
           ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
-            set -e  # Exit if any command fails
+            set -e
 
-            echo "📂 Switching to project directory"
+            echo "📂 Going to project directory"
             cd ~/simple-todo-app
 
-            echo "🧹 Cleaning local repo"
+            echo "🧹 Resetting local changes and cleaning"
             git reset --hard
             git clean -fd
 
-            echo "⬇️ Pulling latest code from GitHub"
+            echo "⬇️ Pulling latest code"
             git pull origin main
 
             echo "📦 Installing backend dependencies"
@@ -45,9 +45,9 @@ jobs:
             npm install
             npm run build
 
-            echo "🌍 Updating Nginx with new build"
+            echo "🌍 Deploying frontend build to Nginx"
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
 
-            echo "✅ Deployment complete!"
+            echo "✅ DONE!"
           EOF
