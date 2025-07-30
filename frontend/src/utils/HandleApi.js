@@ -4,14 +4,25 @@ const baseUrl = "http://localhost:5000";
 
 // Fetch all ToDos from the server
 export const getAllToDo = (setToDo) => {
-  axios
-    .get(baseUrl)
+  axios.get(baseUrl)
     .then(({ data }) => {
       console.log('Fetched ToDos:', data);
-      setToDo(data); // Update the state with fetched data
+      // Suppose the array is inside data.todos
+      if (Array.isArray(data)) {
+        setToDo(data);
+      } else if (data && Array.isArray(data.todos)) {
+        setToDo(data.todos);
+      } else {
+        console.error("Unexpected data format", data);
+        setToDo([]);
+      }
     })
-    .catch((err) => console.error("Error fetching ToDos:", err));
+    .catch((err) => {
+      console.error("Error fetching ToDos:", err);
+      setToDo([]);
+    });
 };
+
 
 // Function to add a new ToDo
 const addToDO = (text, setToDo, setText) => {
