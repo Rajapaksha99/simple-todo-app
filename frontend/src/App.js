@@ -22,7 +22,7 @@ function App() {
   return (
     <div className="App">
       <div className="container">
-        <h1>ToDo Apps</h1>
+        <h1>ToDo Application</h1>
         <div className="top">
           <input
             type="text"
@@ -54,7 +54,7 @@ function App() {
               />
             ))
           ) : (
-            <p>Loading ToDos...</p>
+            <p>Loading ToDos to ...</p>
           )}
         </div>
       </div>
