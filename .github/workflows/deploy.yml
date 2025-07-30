@@ -23,15 +23,14 @@ jobs:
           ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
             set -e
 
+            echo "🧹 Removing existing project directory if exists"
+            rm -rf ~/simple-todo-app
+
+            echo "⬇️ Cloning fresh repository"
+            git clone https://github.com/Rajapaksha99/simple-todo-app.git ~/simple-todo-app
+
             echo "📂 Going to project directory"
             cd ~/simple-todo-app
-
-            echo "🧹 Resetting local changes and cleaning"
-            git reset --hard
-            git clean -fd
-
-            echo "⬇️ Pulling latest code"
-            git pull origin main
 
             echo "📦 Installing backend dependencies"
             cd backend
@@ -49,5 +48,5 @@ jobs:
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
 
-            echo "✅ DONE!"
+            echo "✅ Deployment complete!"
           EOF
