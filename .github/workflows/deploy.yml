@@ -1,24 +1,28 @@
 - name: 🚀 Deploy to Server
   run: |
     ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
+      set -e  # exit if any command fails
+
       cd ~/simple-todo-app
 
-      echo "🔄 Cleaning local repo before pull"
+      echo "🔄 Cleaning local changes"
       git reset --hard
       git clean -fd
 
       echo "⬇️ Pulling latest code from origin/main"
       git pull origin main
 
-      # rest of deploy steps ...
+      echo "📦 Installing backend dependencies"
       cd backend
       npm install
       pm2 restart backend || pm2 start Server.js --name backend
 
+      echo "🧱 Building frontend"
       cd ../frontend
       npm install
       npm run build
 
+      echo "🌐 Updating frontend in Nginx"
       sudo rm -rf /var/www/html/*
       sudo cp -r build/* /var/www/html/
 
