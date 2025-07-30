@@ -43,7 +43,7 @@ function App() {
         </div>
 
         <div className="list">
-          {/* Defensive rendering to avoid error if toDo is not an array */}
+          {/* Defensive rendering FFto avoid error if toDo is not an array */}
           {Array.isArray(toDo) ? (
             toDo.map((item) => (
               <ToDo
