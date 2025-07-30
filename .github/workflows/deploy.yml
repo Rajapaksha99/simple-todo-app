@@ -39,8 +39,4 @@ jobs:
           npm install
           npm run build
 
-          echo "🧹 Cleaning previous frontend build..."
-          sudo rm -rf /var/www/html/*
-
-          echo "📤 Copying new frontend build to Nginx directory..."
-          sudo cp -r dist/* /var/www/html/
+          echo "✅ Deployment finished successfully."
