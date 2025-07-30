@@ -1,4 +1,4 @@
-name: Deploy MERN Frontend
+name: Fullstack App Deployment to Ubuntu VPS
 
 on:
   push:
@@ -10,33 +10,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    - name: Deploy to Ubuntu VPS via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_PRIVATE_KEY }}
+        script: |
+          echo "📁 Changing to project directory..."
+          cd ~/simple-todo-app
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./frontend
+          echo "🔄 Pulling latest changes from GitHub..."
+          git reset --hard
+          git pull origin main
 
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
+          echo "🧰 Installing backend dependencies..."
+          cd backend
+          npm install
 
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          script: |
-            cd /path/to/your/project/frontend
-            git pull origin main
-            npm install
-            npm run build
-            # Restart your app or nginx if needed, example:
-            sudo systemctl restart nginx
+          echo "🚀 Restarting backend with PM2..."
+          pm2 restart Server.js || pm2 start Server.js
+
+          echo "🧱 Building frontend..."
+          cd ../frontend
+          npm install
+          npm run build
+
+          echo "✅ Deployment finished successfully."
