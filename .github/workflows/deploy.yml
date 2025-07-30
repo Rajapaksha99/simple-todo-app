@@ -1,60 +1,26 @@
-name: 🚀 Deploy MERN App
+- name: 🚀 Deploy to Server
+  run: |
+    ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
+      cd ~/simple-todo-app
 
-on:
-  push:
-    branches:
-      - main  # Change if your default branch is different
+      echo "🔄 Cleaning local repo before pull"
+      git reset --hard
+      git clean -fd
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+      echo "⬇️ Pulling latest code from origin/main"
+      git pull origin main
 
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v3
+      # rest of deploy steps ...
+      cd backend
+      npm install
+      pm2 restart backend || pm2 start Server.js --name backend
 
-      - name: 🔐 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      cd ../frontend
+      npm install
+      npm run build
 
-      - name: 🚀 Deploy to Server
-        run: |
-          ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
-            set -e  # Exit if any command fails
+      sudo rm -rf /var/www/html/*
+      sudo cp -r build/* /var/www/html/
 
-            echo "🔄 Changing directory to project"
-            cd ~/simple-todo-app
-
-            echo "🌿 Checking current branch"
-            git branch
-
-            echo "📋 Last commit before pull:"
-            git log -1 --oneline
-
-            echo "⬇️ Pulling latest code from origin/main"
-            git pull origin main
-
-            echo "📋 Last commit after pull:"
-            git log -1 --oneline
-
-            echo "📦 Installing backend dependencies"
-            cd backend
-            npm install
-
-            echo "🔄 Restarting backend with PM2"
-            pm2 reload backend || pm2 start Server.js --name backend
-
-            echo "📦 Installing frontend dependencies and building"
-            cd ../frontend
-            npm install
-            npm run build
-
-            echo "🧹 Cleaning nginx html directory"
-            sudo rm -rf /var/www/html/*
-
-            echo "📂 Copying new build files to nginx html directory"
-            sudo cp -r build/* /var/www/html/
-
-            echo "✅ Deployment complete!"
-          EOF
+      echo "✅ Deployment complete!"
+    EOF
