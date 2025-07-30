@@ -54,7 +54,7 @@ function App() {
               />
             ))
           ) : (
-            <p>Loading ToDos to ...</p>
+            <p>Loading</p>
           )}
         </div>
       </div>
