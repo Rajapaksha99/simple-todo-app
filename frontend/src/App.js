@@ -1,37 +1,65 @@
-- name: 🚀 Deploy to Azure Server
-  run: |
-    ssh -o StrictHostKeyChecking=no hostapp@13.91.104.221 << 'EOF'
-      set -ex  # <-- show each command and exit on error
+import { useEffect, useState } from "react";
+import ToDo from "./components/ToDo";
+import { addToDO, getAllToDo, deleteToDo, updateTodo } from "./utils/HandleApi";
 
-      echo "🧹 Removing existing project directory"
-      rm -rf ~/simple-todo-app
+function App() {
 
-      echo "⬇️ Cloning fresh repo"
-      git clone https://github.com/Rajapaksha99/simple-todo-app.git ~/simple-todo-app
+  const [toDo, setToDo] = useState([]);
+  const [text, setText] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [toDoId, setToDoId] = useState("");
 
-      echo "📂 List simple-todo-app directory contents"
-      ls -lah ~/simple-todo-app
+  useEffect(() => {
+    getAllToDo(setToDo);
+  }, []);
 
-      cd ~/simple-todo-app
+  const updateMode = (_id, text) => {
+    setIsUpdating(true);
+    setText(text);
+    setToDoId(_id);
+  };
 
-      echo "📦 Installing backend dependencies"
-      cd backend
-      npm install
+  return (
+    <div className="App">
+      <div className="container">
+        <h1>Todfgffdfd</h1>
+        <div className="top">
+          <input
+            type="text"
+            placeholder="Add ToDos..."
+            value={text || ""}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <div
+            className="add"
+            onClick={
+              isUpdating
+                ? () => updateTodo(toDoId, text, setToDo, setText, setIsUpdating)
+                : () => addToDO(text, setToDo, setText) // <-- FIXED parameter order here
+            }
+          >
+            {isUpdating ? "UPDATE" : "Add"}
+          </div>
+        </div>
 
-      echo "🔁 Restarting backend with PM2"
-      pm2 restart backend || pm2 start Server.js --name backend
+        <div className="list">
+          {/* Defensive rendering FFto avoid error if toDo is not an array */}
+          {Array.isArray(toDo) ? (
+            toDo.map((item) => (
+              <ToDo
+                key={item._id}
+                text={item.text}
+                updateMode={() => updateMode(item._id, item.text)}
+                deleteToDo={() => deleteToDo(item._id, setToDo)}
+              />
+            ))
+          ) : (
+            <p>Loading</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-      echo "🧱 Building frontend"
-      cd ../frontend
-      npm install
-      npm run build
-
-      echo "🌍 Deploying frontend build to Nginx"
-      sudo rm -rf /var/www/html/*
-      sudo cp -r build/* /var/www/html/
-
-      echo "🌍 List /var/www/html contents after copy"
-      ls -lah /var/www/html
-
-      echo "✅ Deployment complete!"
-    EOF
+export default App;
